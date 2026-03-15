@@ -23,8 +23,7 @@ class PracticeFormPage:
         self.result_modal = page.locator(".modal-content")
         self.result_title = page.get_by_text("Thanks for submitting the form", exact=True)
 
-    def open(self) -> Nonpages/POM_Inputs.py, pages/POM_Buttons.py, pages/POM_Checkbox.py, pages/POM_DragAndDrop.py, pages/POM_Popups.py, pages/POM_Select.py, pages/POM_PracticeForm.py, tests/conftest.py,
-tests/test_POM_Inputs.py, tests/test_POM_Buttons.py, tests/test_POM_Checkbox.py, tests/test_POM_DragAndDrop.py, tests/test_POM_Popups.py, tests/test_POM_Select.py, tests/test_POM_PracticeForm.pye:
+    def open(self) -> None:
         self.page.goto(self.URL)
         expect(self.first_name).to_be_visible()
 
