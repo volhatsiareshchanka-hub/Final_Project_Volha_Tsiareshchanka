@@ -1,71 +1,87 @@
-from playwright.sync_api import expect, Page
+from playwright.sync_api import Page, expect
 
 class CheckboxPage:
+    SINGLE_URL = "https://www.qa-practice.com/elements/checkbox/single_checkbox"
+    MULTIPLE_URL = "https://www.qa-practice.com/elements/checkbox/mult_checkbox"
 
-    URL = "https://www.qa-practice.com/elements/checkbox/single_checkbox"
     def __init__(self, page: Page):
         self.page = page
-        self.checkbox = page.locator("#id_checkbox_0")
         self.submit_btn = page.get_by_role("button", name="Submit")
-        self.result = page.locator("#result-text")
+        self.result_text = page.locator("#result-text")
 
-    def open(self) -> None:
-        self.page.goto(self.URL)
+    def open_single_checkbox_tab(self) -> None:
+        self.page.goto(self.SINGLE_URL)
+        expect(self.submit_btn).to_be_visible()
 
-    def check_checkbox(self) -> None:
-        self.checkbox.check()
+    def open_multiple_checkboxes_tab(self) -> None:
+        self.page.goto(self.MULTIPLE_URL)
+        expect(self.submit_btn).to_be_visible()
+
+    @property
+    def single_checkbox(self):
+        return self.page.locator("#id_checkbox_0")
+
+    @property
+    def single_checkbox_label(self):
+        return self.page.locator("label[for='id_checkbox_0']")
+
+    def multiple_checkbox(self, index: int):
+        return self.page.locator(f"#id_checkboxes_{index}")
+
+    def multiple_checkbox_label(self, index: int):
+        return self.page.locator(f"label[for='id_checkboxes_{index}']")
+
+    @property
+    def all_multiple_checkboxes(self):
+        return self.page.locator("input[name='checkboxes']")
 
     def submit(self) -> None:
         self.submit_btn.click()
 
-    def check_result(self, expected: str = "select me or not") -> None:
-        expect(self.result).to_contain_text(expected)
+    def check_single_checkbox(self) -> None:
+        self.single_checkbox.check()
 
+    def uncheck_single_checkbox(self) -> None:
+        self.single_checkbox.uncheck()
 
+    def check_multiple_checkbox(self, index: int) -> None:
+        self.multiple_checkbox(index).check()
 
+    def uncheck_multiple_checkbox(self, index: int) -> None:
+        self.multiple_checkbox(index).uncheck()
 
+    def check_multiple_checkboxes(self, indexes: list[int]) -> None:
+        for index in indexes:
+            self.check_multiple_checkbox(index)
 
+    def is_single_checkbox_checked(self) -> bool:
+        return self.single_checkbox.is_checked()
 
+    def is_multiple_checkbox_checked(self, index: int) -> bool:
+        return self.multiple_checkbox(index).is_checked()
 
-# def test_open_google(page: Page) -> None:
-#     page.goto("https://www.qa-practice.com/")
-#     time.sleep(2)
-#
-# # Single checkbox
-#     page.get_by_role("link", name="Text input").click()
-#     page.get_by_role("link", name="Checkbox").click()
-#     page.locator('#req_header').click()
-#     time.sleep(2)
-#     page.locator('#id_checkbox_0').check()
-#     page.get_by_role("button", name="Submit").click()
-#     expect(page.get_by_text("Selected checkboxes: select me or not")).to_be_visible()
-#     time.sleep(2)
+    def is_submit_enabled(self) -> bool:
+        return self.submit_btn.is_enabled()
 
+    def single_checkbox_count(self) -> int:
+        return self.page.locator("input[type='checkbox']").count()
 
+    def multiple_checkboxes_count(self) -> int:
+        return self.all_multiple_checkboxes.count()
 
+    def get_single_checkbox_label_text(self) -> str:
+        return self.single_checkbox_label.inner_text().strip()
 
-class PopupsPage:
-    def __init__(self, page: Page):
+    def get_multiple_checkbox_label_text(self, index: int) -> str:
+        return self.multiple_checkbox_label(index).inner_text().strip()
 
-        self.page = page
-        self.open_modal_btn = page.locator('#content > button')
-        self.modal = page.locator('#content')
-        self.checkbox = page.locator('#id_checkbox_0')
-        self.send_btn = page.get_by_role('button', name='Send')
-        self.result = page.locator("#result-text")
+    def check_result_contains(self, text: str) -> None:
+        expect(self.result_text).to_contain_text(text)
 
+    def result_exists(self) -> bool:
+        return self.result_text.count() > 0
 
-    def open(self) -> None:
-        self.page.goto(URL)
-
-    def open_modal(self) -> None:
-        self.open_modal_btn.click()
-
-    def select_checkbox(self) -> None:
-        self.checkbox.check()
-
-    def submit_modal(self):
-        self.send_btn.click()
-
-    def check_result(self, expected:str) -> None:
-        expect(self.result).to_have_text(expected)
+    def get_result_text(self) -> str:
+        if self.result_text.count() > 0:
+            return self.result_text.inner_text().strip()
+        return ""

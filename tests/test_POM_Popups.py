@@ -1,47 +1,111 @@
-from tkinter import dialog
+import pytest
 
-from playwright.sync_api import Page, expect
-import time
+pytestmark = [pytest.mark.ui, pytest.mark.popup]
 
-from pages.POM_Popups import PopupsPage
+# MODAL POPUP
 
-URL = "https://www.qa-practice.com/elements/popup/modal"
-
-def test_popups(popup_page, page: Page):
-    popup_page.open()
-    popup_page.open_modal()
-    popup_page.select_checkbox()
-    popup_page.submit_modal()
-    popup_page.check_result("select me or not")
+@pytest.mark.smoke
+@pytest.mark.positive
+def test_modal_page_has_launch_popup_button(popup_page):
+    popup_page.open_modal_tab()
+    assert popup_page.launch_popup_btn.is_visible() is True
 
 
-    # def open(self) -> None:
-    #     self.page.goto(URL)
-    #
-    # def open_modal(self) -> None:
-    #     self.open_modal.click()
-    #
-    # def select_checkbox(self) -> None:
-    #     self.checkbox.check()
-    #
-    # def submit_modal(self):
-    #     self.send_btn.click()
-    #
-    # def check_result(self, expected=None):
-    #     expect(self.result).to_have_text(expected)
+@pytest.mark.positive
+def test_modal_launch_button_opens_popup(popup_page):
+    popup_page.open_modal_tab()
+    popup_page.open_popup()
+    popup_page.modal_is_open()
 
 
+@pytest.mark.positive
+def test_modal_title_is_correct(popup_page):
+    popup_page.open_modal_tab()
+    popup_page.open_popup()
+    assert popup_page.get_modal_title_text() == "I am a Pop-Up"
 
-# def test_modal_popup(page: Page):
-#     page.goto('https://www.qa-practice.com/elements/popup/modal')
-#     time.sleep(2)
-#     page.locator('#content > button').click()
-#     time.sleep(2)
-#     popup = page.locator('#content')
-#     checkbox = popup.locator('#id_checkbox_0')
-#     checkbox.check()
-#     time.sleep(2)
-#     button = popup.get_by_role('button', name='Send')
-#     button.click()
-#     time.sleep(2)
-#     expect(page.locator('#result-text')).to_have_text('select me or not')
+
+@pytest.mark.positive
+def test_modal_checkbox_can_be_selected(popup_page):
+    popup_page.open_modal_tab()
+    popup_page.open_popup()
+    popup_page.check_modal_checkbox()
+    assert popup_page.is_modal_checkbox_checked() is True
+
+
+@pytest.mark.negative
+def test_modal_send_without_checkbox_shows_no_result(popup_page):
+    popup_page.open_modal_tab()
+    popup_page.open_popup()
+    popup_page.click_modal_send()
+
+    assert popup_page.modal_result_exists() is False
+
+
+@pytest.mark.positive
+def test_modal_send_selected_checkbox_displays_result(popup_page):
+    popup_page.open_modal_tab()
+    popup_page.open_popup()
+    popup_page.check_modal_checkbox()
+    popup_page.click_modal_send()
+
+    popup_page.check_modal_result_contains("select me or not")
+
+
+# IFRAME POPUP
+
+@pytest.mark.smoke
+@pytest.mark.positive
+def test_iframe_page_has_launch_popup_button(popup_page):
+    popup_page.open_iframe_tab()
+    assert popup_page.launch_popup_btn.is_visible() is True
+
+
+@pytest.mark.positive
+def test_iframe_launch_button_opens_popup(popup_page):
+    popup_page.open_iframe_tab()
+    popup_page.open_popup()
+    popup_page.iframe_popup_is_open()
+
+
+@pytest.mark.positive
+def test_iframe_contains_page_title(popup_page):
+    popup_page.open_iframe_tab()
+    popup_page.open_popup()
+    assert popup_page.get_iframe_title_text() == "Iframe page title"
+
+
+@pytest.mark.positive
+def test_iframe_contains_text_to_copy(popup_page):
+    popup_page.open_iframe_tab()
+    popup_page.open_popup()
+    assert "I am the text you want to copy" in popup_page.get_iframe_text()
+
+
+@pytest.mark.positive
+def test_iframe_check_button_opens_input_form(popup_page):
+    popup_page.open_iframe_tab()
+    popup_page.open_popup()
+    popup_page.click_iframe_check()
+
+    assert popup_page.input_form_is_visible() is True
+
+
+@pytest.mark.positive
+def test_iframe_correct_text_shows_correct_message(popup_page):
+    popup_page.open_iframe_tab()
+    popup_page.open_popup()
+    popup_page.click_iframe_check()
+    popup_page.submit_value("I am the text you want to copy")
+
+    popup_page.check_correct_message()
+
+
+@pytest.mark.negative
+def test_iframe_incorrect_text_shows_error_message(popup_page):
+    popup_page.open_iframe_tab()
+    popup_page.open_popup()
+    popup_page.click_iframe_check()
+    popup_page.submit_value("Wrong text")
+
+    popup_page.check_incorrect_message()
